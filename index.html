@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio de Cálculo Integral - Elsa Domenika Mina Montaño</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Inter & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- KaTeX para renderizado matemático de LaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <!-- Three.js para simulación gráfica 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cosmos: {
+                            950: '#020208',
+                            900: '#060515',
+                            800: '#0c0a2a',
+                            700: '#14113f',
+                            600: '#1b1758',
+                        },
+                        neon: {
+                            cyan: '#06b6d4',
+                            pink: '#ec4899',
+                            violet: '#a855f7',
+                            amber: '#f59e0b',
+                            emerald: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020208;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(168, 85, 247, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+            overflow-x: hidden;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .glass-panel {
+            background: rgba(12, 10, 42, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.18);
+        }
+
+        .active-tab {
+            background: linear-gradient(180deg, rgba(168, 85, 247, 0.3) 0%, rgba(6, 182, 212, 0.08) 100%);
+            border-bottom: 3px solid #a855f7;
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25);
+        }
+
+        .fade-transition {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .katex-display {
+            margin: 0.5em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        .katex {
+            font-size: 1.2em !important;
+            color: #06b6d4 !important;
+            text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+        .katex .mathnormal {
+            color: #ec4899 !important;
+        }
+
+        /* Estilos simulados para el editor tipo Word */
+        .word-editor-paper {
+            background-color: #ffffff;
+            color: #1e293b;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            border: 1px solid #cbd5e1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .word-toolbar-btn {
+            @apply p-2 rounded text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors text-xs font-bold flex items-center justify-center;
+        }
+
+        /* Indicador de ejes 3D sobre la gráfica */
+        .axis-label-overlay {
+            position: absolute;
+            color: #ffffff;
+            font-family: 'Fira Code', monospace;
+            font-size: 10px;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col selection:bg-neon-pink/40 selection:text-white">
+
+    <!-- Header Principal -->
+    <header class="w-full glass-panel border-b border-cosmos-800 py-4 px-6 sticky top-0 z-50 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-neon-pink via-neon-violet to-neon-cyan flex items-center justify-center text-white font-black text-lg shadow-lg shadow-neon-violet/30">
+                ED
+            </div>
+            <div>
+                <h1 class="text-xs font-bold text-neon-cyan uppercase tracking-widest leading-none">PORTAFOLIO DE CÁLCULO INTEGRAL</h1>
+                <p class="text-base font-black text-white">Elsa Domenika Mina Montaño</p>
+            </div>
+        </div>
+        
+        <!-- Botonera de Control -->
+        <div class="flex items-center gap-3">
+            <button onclick="toggleEditMode()" id="editModeToggleBtn" class="px-4 py-2 rounded-xl text-xs font-bold border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10 transition-all flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square"></i> Activar Modo Edición
+            </button>
+            <button onclick="triggerResetModal()" class="px-3 py-2 rounded-xl text-xs font-bold border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-all" title="Restablecer valores predeterminados">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Barra Superior de Navegación de Temas -->
+    <nav class="w-full bg-cosmos-950/95 border-b border-cosmos-800 sticky top-[73px] z-40 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-4 flex items-center">
+            <button onclick="scrollTopicsNav(-180)" class="text-slate-400 hover:text-white p-2">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            
+            <div id="topicsNavbar" class="flex-1 overflow-x-auto whitespace-nowrap scroll-smooth no-scrollbar flex items-center py-2 px-1 gap-1">
+                <button onclick="switchTab('bienvenida')" id="nav-bienvenida" class="inline-flex items-center gap-2 px-4 py-3 rounded-t-xl text-xs font-bold text-slate-400 hover:text-white transition-all">
+                    <i class="fa-solid fa-house"></i> Inicio
+                </button>
+                <button onclick="switchTab('simulador')" id="nav-simulador" class="inline-flex items-center gap-2 px-4 py-3 rounded-t-xl text-xs font-bold text-slate-400 hover:text-white transition-all">
+                    <i class="fa-solid fa-calculator text-neon-cyan"></i> Simulador
+                </button>
+                
+                <div id="navDynamicTopics" class="inline-flex gap-1"></div>
+            </div>
+
+            <button onclick="scrollTopicsNav(180)" class="text-slate-400 hover:text-white p-2">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Layout Principal -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Zona de Contenido Activo (Pestañas) -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <!-- BIENVENIDA -->
+            <div id="sec-bienvenida" class="content-section fade-transition space-y-6">
+                <div class="glass-panel p-6 md:p-10 rounded-3xl space-y-6 relative overflow-hidden">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-neon-pink/10 rounded-full blur-2xl"></div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-violet/15 border border-neon-violet/30 text-neon-violet text-[10px] font-extrabold uppercase tracking-widest">
+                        <i class="fa-solid fa-graduation-cap"></i> Proyecto Académico de Ingeniería
+                    </div>
+                    
+                    <h2 class="text-3xl md:text-5xl font-black text-white leading-tight">
+                        Cálculo Integral <br>
+                        <span class="bg-gradient-to-r from-neon-cyan via-neon-violet to-neon-pink bg-clip-text text-transparent">Teoría, Ejercicios y Gráficos 3D Científicos</span>
+                    </h2>
+                    
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                        Bienvenido al portafolio interactivo de cálculo integral de <strong class="text-white">Elsa Domenika Mina Montaño</strong>. Este entorno web combina rigor conceptual, ejercicios resueltos paso a paso y visualizaciones tridimensionales interactivas similares a las generadas por software de análisis científico como MATLAB, emulando la malla y mapa de color de la referencia <span class="text-neon-cyan font-semibold">image_a44c3d.png</span>.
+                    </p>
+
+                    <div class="p-4 rounded-2xl bg-black/40 border border-white/5 space-y-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-neon-cyan"><i class="fa-solid fa-circle-nodes mr-2"></i>Características Principales:</h4>
+                        <ul class="text-xs text-slate-400 space-y-1.5 list-disc pl-5">
+                            <li><strong>Superficies de Malla 3D Científica:</strong> Gráficos interactivos de alta calidad con mapeo de colores según su altura.</li>
+                            <li><strong>Calculadora Científica Integrada:</strong> Calcula de forma dinámica el área neta encerrada entre dos funciones.</li>
+                            <li><strong>CMS de Edición estilo Word:</strong> Modifica descripciones, carga fórmulas LaTeX reales y enlaces de vídeos libremente.</li>
+                        </ul>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="switchTab('t1')" class="px-5 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-neon-violet to-neon-pink text-white hover:opacity-90 transition-all flex items-center gap-2 shadow-lg shadow-neon-pink/25">
+                            Empezar Estudio de Temas <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        <button onclick="switchTab('simulador')" class="px-5 py-3 rounded-xl text-xs font-bold bg-cosmos-800 text-white hover:bg-cosmos-700 transition-all border border-cosmos-600 flex items-center gap-2">
+                            Simulador de Áreas <i class="fa-solid fa-calculator"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIMULADOR DINÁMICO DE INTEGRACIÓN MEJORADO (Estilo IntegralStudio) -->
+            <div id="sec-simulador" class="content-section hidden fade-transition space-y-6">
+                <div class="glass-panel p-6 rounded-3xl space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-cosmos-700 gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-neon-cyan/10 flex items-center justify-center text-neon-cyan">
+                                <i class="fa-solid fa-calculator text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-white">Simulador Profesional IntegralStudio</h2>
+                                <p class="text-[9px] text-neon-cyan font-black tracking-widest uppercase">Área entre Curvas y Particiones de Riemann</p>
+                            </div>
+                        </div>
+                        <!-- Botones de Ejemplos Matemáticos rápidos -->
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider mr-1">Cargar:</span>
+                            <button onclick="loadSimPreset('parabola')" type="button" class="px-2 py-1 rounded bg-cosmos-800 text-[10px] text-slate-300 border border-cosmos-700 hover:border-neon-cyan hover:text-white transition-all">Parábola</button>
+                            <button onclick="loadSimPreset('trig')" type="button" class="px-2 py-1 rounded bg-cosmos-800 text-[10px] text-slate-300 border border-cosmos-700 hover:border-neon-cyan hover:text-white transition-all">Trigonométrico</button>
+                            <button onclick="loadSimPreset('wave')" type="button" class="px-2 py-1 rounded bg-cosmos-800 text-[10px] text-slate-300 border border-cosmos-700 hover:border-neon-cyan hover:text-white transition-all">Ondas</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Panel de Controles Izquierdo -->
+                        <form onsubmit="calcularArea(event)" class="lg:col-span-5 space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider flex justify-between">
+                                    <span>Función Superior f(x)</span>
+                                    <span class="text-neon-pink text-[9px] font-mono">Línea Rosada</span>
+                                </label>
+                                <input type="text" id="fx" value="x" class="w-full bg-cosmos-950 border border-cosmos-700 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-neon-pink transition-colors" required oninput="calcularAreaSinSubmit()">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider flex justify-between">
+                                    <span>Función Inferior g(x)</span>
+                                    <span class="text-neon-cyan text-[9px] font-mono">Línea Celeste</span>
+                                </label>
+                                <input type="text" id="gx" value="x * x" class="w-full bg-cosmos-950 border border-cosmos-700 rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-neon-cyan transition-colors" required oninput="calcularAreaSinSubmit()">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Límite Inferior (a)</label>
+                                    <input type="number" id="limA" value="0" step="any" class="w-full bg-cosmos-950 border border-cosmos-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-neon-cyan transition-colors" required oninput="calcularAreaSinSubmit()">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Límite Superior (b)</label>
+                                    <input type="number" id="limB" value="1" step="any" class="w-full bg-cosmos-950 border border-cosmos-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-neon-cyan transition-colors" required oninput="calcularAreaSinSubmit()">
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Método de Integración</label>
+                                <select id="simMethod" class="w-full bg-cosmos-950 border border-cosmos-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-neon-cyan transition-colors" onchange="togglePartitionSlider()">
+                                    <option value="exact">Integración Numérica Exacta</option>
+                                    <option value="left">Suma de Riemann Izquierda</option>
+                                    <option value="right">Suma de Riemann Derecha</option>
+                                    <option value="midpoint">Suma de Riemann Central</option>
+                                    <option value="trapezoid">Regla del Trapecio</option>
+                                </select>
+                            </div>
+                            <!-- Deslizador de Particiones Riemann (Se muestra dinámicamente) -->
+                            <div id="partitionSliderContainer" class="space-y-1.5 hidden border-t border-cosmos-800 pt-3">
+                                <div class="flex justify-between text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">
+                                    <span>Particiones (n)</span>
+                                    <span id="partitionValue" class="text-neon-cyan font-bold">20</span>
+                                </div>
+                                <input type="range" id="simPartitions" min="4" max="100" value="20" class="w-full accent-neon-cyan cursor-pointer" oninput="updatePartitionLabel()">
+                            </div>
+                            <button type="submit" class="w-full py-3 bg-gradient-to-r from-neon-cyan to-neon-violet text-white text-xs font-bold uppercase tracking-widest rounded-xl hover:opacity-90 transition-all shadow-lg shadow-neon-cyan/20">
+                                Recalcular Región
+                            </button>
+                        </form>
+
+                        <!-- Panel de Visualización y Consola Derecho -->
+                        <div class="lg:col-span-7 space-y-4">
+                            <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-cosmos-950 border border-cosmos-800 flex flex-col justify-between">
+                                <canvas id="simulador-canvas" class="w-full h-full cursor-crosshair"></canvas>
+                                <!-- Tracker de coordenadas -->
+                                <div id="canvas-tracker-info" class="w-full bg-cosmos-900/95 border-t border-cosmos-800 px-4 py-2.5 backdrop-blur-md">
+                                    <span class="text-[10px] text-slate-500">Mueve el mouse sobre la gráfica para explorar coordenadas...</span>
+                                </div>
+                            </div>
+                            <!-- Consola de Resultados -->
+                            <div id="consolaResultado" class="bg-black/40 border border-dashed border-cosmos-700 p-5 rounded-2xl flex items-center justify-center min-h-[140px]">
+                                <div class="text-center space-y-2">
+                                    <i class="fa-solid fa-chart-area text-3xl text-slate-600"></i>
+                                    <p class="text-xs text-slate-400">Ingresa tus límites y ecuaciones para renderizar su integral numérica exacta.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR DE TEMA COMPARTIDO (Renderizado Dinámicamente) -->
+            <div id="sec-tema-dinamico" class="content-section hidden fade-transition space-y-6"></div>
+
+        </div>
+
+        <!-- Barra Lateral Derecha: Gráfico Científico 3D y Editor Tipo Word -->
+        <aside class="lg:col-span-4 space-y-6">
+            
+            <!-- MODELO GEOMÉTRICO 3D MEJORADO (Estilo image_a44c3d.png) -->
+            <div class="glass-panel p-5 rounded-3xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-bold text-neon-cyan uppercase tracking-widest bg-cosmos-950 px-2.5 py-1 rounded border border-neon-cyan/20">Visualizador Científico 3D</span>
+                    <i class="fa-solid fa-chart-line text-neon-cyan animate-pulse"></i>
+                </div>
+                
+                <div class="relative w-full aspect-square rounded-2xl overflow-hidden bg-black/90 border border-cosmos-800">
+                    <div id="threejs-container" class="w-full h-full"></div>
+                    
+                    <!-- Superposiciones de texto para simular etiquetas de ejes MATLAB de image_a44c3d.png -->
+                    <div class="axis-label-overlay" style="top: 10px; right: 15px;">Z (Altura)</div>
+                    <div class="axis-label-overlay" style="bottom: 12px; left: 35%;">Y (Eje Y)</div>
+                    <div class="axis-label-overlay" style="bottom: 12px; right: 25%;">X (Eje X)</div>
+                    
+                    <div class="absolute bottom-10 left-3 right-3 text-center text-[9px] text-slate-400 bg-cosmos-950/90 py-1.5 px-2 rounded-lg border border-white/5 pointer-events-none">
+                        Arrastra para rotar · Malla degradada por altura similar a image_a44c3d.png
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDITOR EN TIEMPO REAL ESTILO WORD (CMS) -->
+            <div id="quickEditPanel" class="glass-panel p-5 rounded-3xl space-y-4 hidden border-neon-amber/40 bg-cosmos-950/80">
+                <div class="flex items-center gap-2 text-neon-amber">
+                    <i class="fa-solid fa-file-pen"></i>
+                    <h3 class="text-xs font-black uppercase tracking-wider">Editor de Contenidos (Estilo Word)</h3>
+                </div>
+                <p class="text-[10px] text-slate-400">
+                    Diseña y edita de forma enriquecida la teoría y las secciones de fórmulas/ejercicios del tema seleccionado.
+                </p>
+
+                <!-- Área del Editor Organizado como Word -->
+                <div class="space-y-3">
+                    <div class="word-editor-paper p-3 text-slate-800 space-y-3 text-xs">
+                        <!-- Barra de Herramientas Word -->
+                        <div class="flex flex-wrap gap-1 pb-2 border-b border-slate-200">
+                            <button onclick="formatEditorText('bold')" class="word-toolbar-btn px-2" title="Negrita"><i class="fa-solid fa-bold"></i></button>
+                            <button onclick="formatEditorText('italic')" class="word-toolbar-btn px-2" title="Cursiva"><i class="fa-solid fa-italic"></i></button>
+                            <button onclick="formatEditorText('underline')" class="word-toolbar-btn px-2" title="Subrayado"><i class="fa-solid fa-underline"></i></button>
+                            <div class="w-px bg-slate-300 mx-1"></div>
+                            <button onclick="insertFormulaPlaceholder()" class="word-toolbar-btn text-[10px] font-mono font-black" title="Insertar Ecuación LaTeX">LaTeX</button>
+                            <button onclick="insertBulletList()" class="word-toolbar-btn px-2" title="Lista de viñetas"><i class="fa-solid fa-list"></i></button>
+                        </div>
+
+                        <!-- Campos editables del Documento -->
+                        <div class="space-y-2">
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-500 uppercase">Título del Documento</label>
+                                <input type="text" id="editTitle" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 font-bold text-slate-800 text-xs focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-500 uppercase">Fórmula Matemática (LaTeX)</label>
+                                <input type="text" id="editFormula" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 font-mono text-xs focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-500 uppercase">Contenido del Tema</label>
+                                <textarea id="editDesc" rows="5" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 text-xs focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-500 uppercase">Enlace del Video de Apoyo (Cualquier link de YouTube)</label>
+                                <input type="text" id="editYoutube" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 text-xs focus:outline-none focus:border-indigo-500" placeholder="Ej: https://www.youtube.com/watch?v=...">
+                            </div>
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-500 uppercase">Enlace de Imagen de Apoyo</label>
+                                <input type="text" id="editImage" class="w-full bg-slate-50 border border-slate-300 rounded p-1.5 text-xs focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onclick="saveCurrentTopic()" class="w-full py-2.5 bg-neon-amber text-cosmos-950 font-black uppercase tracking-wider text-[10px] rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-neon-amber/25">
+                        <i class="fa-solid fa-floppy-disk"></i> Aplicar Cambios al Documento
+                    </button>
+                </div>
+            </div>
+
+            <!-- TARJETA DEL AUTOR -->
+            <div class="glass-panel p-5 rounded-3xl space-y-4 relative overflow-hidden">
+                <div class="absolute -left-10 -bottom-10 w-28 h-28 bg-neon-cyan/10 rounded-full blur-2xl"></div>
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-neon-pink to-neon-violet flex items-center justify-center text-white font-extrabold shadow-lg">
+                        ED
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-neon-pink uppercase tracking-widest">Estudiante Autor</h4>
+                        <h3 class="text-sm font-bold text-white">Elsa Domenika Mina M.</h3>
+                        <p class="text-[10px] text-slate-400">Ingeniería en Sistemas</p>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+    </main>
+
+    <!-- Modales Personalizados -->
+    <div id="resetModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden p-4">
+        <div class="glass-panel max-w-md w-full p-6 rounded-3xl space-y-4 border-red-500/30">
+            <div class="flex items-center gap-3 text-red-500">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="font-bold text-lg text-white">¿Restablecer todo?</h3>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Esta acción eliminará todas las ediciones que hayas realizado en los 14 temas y volverá a cargar las explicaciones y fórmulas originales por defecto.
+            </p>
+            <div class="flex gap-3 pt-2">
+                <button onclick="closeResetModal()" class="w-1/2 py-2.5 bg-cosmos-800 border border-cosmos-600 rounded-xl text-xs font-bold text-slate-300">Cancelar</button>
+                <button onclick="confirmResetToDefaults()" class="w-1/2 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold">Sí, Restablecer</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="w-full glass-panel border-t border-cosmos-800 py-6 px-6 mt-12 text-center text-xs text-slate-500">
+        <p>&copy; 2026 · Elsa Domenika Mina Montaño. Portafolio Web interactivo con gráficos 3D inspirados en image_a44c3d.png y simulador IntegralStudio.</p>
+    </footer>
+
+    <script>
+        const DEFAULT_TEMAS = [
+            {
+                id: 't1',
+                title: 'Integrales Definidas',
+                desc: 'La integral definida representa la acumulación de un área bajo una curva f(x) acotada en un intervalo cerrado [a, b]. Se calcula mediante el límite de las sumas de Riemann cuando el número de rectángulos tiende a infinito, lo que permite evaluar integraciones exactas en lugar de aproximaciones.',
+                formula: '\\int_a^b f(x)\\,dx = F(b) - F(a)',
+                youtube: 'https://www.youtube.com/watch?v=gU9vR6vS_0o',
+                image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'gaussian'
+            },
+            {
+                id: 't2',
+                title: 'Integrales Indefinidas',
+                desc: 'La integral indefinida es la operación que busca la antiderivada general de una función. Dado que la derivada de cualquier constante numérica C es siempre cero, cada integral indefinida debe incorporar una constante genérica de integración "+ C" al final de su resultado algebraico.',
+                formula: '\\int f(x)\\,dx = F(x) + C',
+                youtube: 'https://www.youtube.com/watch?v=RoxZlX8VfU8',
+                image: 'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'sombrero'
+            },
+            {
+                id: 't3',
+                title: 'Integrales por Partes',
+                desc: 'Este método matemático proviene directamente de la regla de derivación para el producto de dos funciones. Se utiliza de manera predilecta cuando la función integrando consta del producto de componentes algebraicos, exponenciales o trigonométricos disímiles.',
+                formula: '\\int u\\,dv = u\\cdot v - \\int v\\,du',
+                youtube: 'https://www.youtube.com/watch?v=d3U_D9_rVb0',
+                image: 'https://images.unsplash.com/photo-1635070040809-b461f85b6b15?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'saddle'
+            },
+            {
+                id: 't4',
+                title: 'Integrales por Cambio de Variable',
+                desc: 'El cambio de variable (o sustitución) se enfoca en simplificar expresiones complejas al mapear una sección de la función a una nueva variable temporal "u", reduciendo la expresión original a una integral directa.',
+                formula: '\\int f(g(x))\\cdot g\'(x)\\,dx = \\int f(u)\\,du',
+                youtube: 'https://www.youtube.com/watch?v=gU9vR6vS_0o',
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'riemann_rects'
+            },
+            {
+                id: 't5',
+                title: 'Integrales Funciones Trigonométricas',
+                desc: 'Este tipo de integrales comprende potencias y multiplicaciones de funciones periódicas. Requiere la aplicación de identidades pitagóricas para simplificar los exponentes del seno, coseno, secante y tangente, dejándolos listos para un cambio de variable.',
+                formula: '\\int \\sin^n(x)\\cdot\\cos^m(x)\\,dx',
+                youtube: 'https://www.youtube.com/watch?v=RoxZlX8VfU8',
+                image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'sineWave'
+            },
+            {
+                id: 't6',
+                title: 'Entidades Trigonométricas',
+                desc: 'Cuando se enfrentan potencias pares puras de funciones periódicas (por ejemplo, seno al cuadrado o coseno al cuadrado), no es factible aplicar sustitución simple de manera inmediata. Es allí donde las identidades de ángulo medio o doble resultan indispensables.',
+                formula: '\\sin^2(x) = \\frac{1-\\cos(2x)}{2}',
+                youtube: 'https://www.youtube.com/watch?v=d3U_D9_rVb0',
+                image: 'https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'sombrero'
+            },
+            {
+                id: 't7',
+                title: 'Integración por Sustitución Trigonométrica',
+                desc: 'Método diseñado para remover raíces cuadradas complejas mediante el uso del teorema de Pitágoras expresado en un triángulo auxiliar. Convierte factores del tipo a^2 - x^2, a^2 + x^2 o x^2 - a^2 en términos trigonométricos limpios.',
+                formula: 'x = a\\cdot\\sin(\\theta) \\implies \\sqrt{a^2-x^2} = a\\cdot\\cos(\\theta)',
+                youtube: 'https://www.youtube.com/watch?v=gU9vR6vS_0o',
+                image: 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'gaussian'
+            },
+            {
+                id: 't8',
+                title: 'Integración Funciones Racionales',
+                desc: 'Este método, conocido como descomposición en fracciones parciales, permite descomponer una función racional compleja en una suma de fracciones más simples con denominadores lineales o cuadráticos irreducibles.',
+                formula: '\\frac{P(x)}{Q(x)} = \\frac{A}{x-r_1} + \\frac{B}{x-r_2}',
+                youtube: 'https://www.youtube.com/watch?v=RoxZlX8VfU8',
+                image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'saddle'
+            },
+            {
+                id: 't9',
+                title: 'Caso II: Factores Lineales Repetidos',
+                desc: 'Un caso particular de las fracciones parciales donde un factor lineal en el denominador aparece repetido "n" veces. La regla indica que debemos crear fracciones acumulativas con potencias incrementales desde 1 hasta n.',
+                formula: '\\frac{P(x)}{(x-a)^n} = \\frac{A_1}{x-a} + \\frac{A_2}{(x-a)^2} + \\dots + \\frac{A_n}{(x-a)^n}',
+                youtube: 'https://www.youtube.com/watch?v=d3U_D9_rVb0',
+                image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'riemann_rects'
+            },
+            {
+                id: 't10',
+                title: 'Área Bajo la Curva',
+                desc: 'Es la interpretación geométrica de la integral definida de Riemann. El área confinada entre la trayectoria de una función continua positiva f(x) y el eje X se calcula subdividiendo el espacio en rectángulos infinitamente delgados en un rango dado [a, b].',
+                formula: 'A = \\int_a^b f(x)\\,dx',
+                youtube: 'https://www.youtube.com/watch?v=gU9vR6vS_0o',
+                image: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'sineWave'
+            },
+            {
+                id: 't11',
+                title: 'Calcular el Área de R.L',
+                desc: 'Permite encontrar el espacio exacto encerrado entre las fronteras de intersección de dos o más funciones diferenciables continuas. Se evalúa restando la ecuación inferior g(x) de la superior f(x) en todo el intervalo de interés.',
+                formula: 'A = \\int_a^b \\left( f(x) - g(x) \\right)\\,dx',
+                youtube: 'https://www.youtube.com/watch?v=RoxZlX8VfU8',
+                image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'sombrero'
+            },
+            {
+                id: 't12',
+                title: 'Volumen de Sólido de Revolución',
+                desc: 'Describe el cálculo del volumen ocupado por una figura tridimensional obtenida al rotar el contorno de una función plana de manera uniforme alrededor de un eje coordinado.',
+                formula: 'V = \\pi\\cdot\\int_a^b [f(x)]^2\\,dx',
+                youtube: 'https://www.youtube.com/watch?v=d3U_D9_rVb0',
+                image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'saddle'
+            },
+            {
+                id: 't13',
+                title: 'Longitud de una Curva',
+                desc: 'Consiste en la medida lineal exacta de la trayectoria curva que dibuja una función continua en el plano euclidiano en un intervalo [a, b]. Se deduce aplicando incrementos infinitesimales del teorema de Pitágoras.',
+                formula: 'L = \\int_a^b \\sqrt{1 + [f\'(x)]^2}\\,dx',
+                youtube: 'https://www.youtube.com/watch?v=gU9vR6vS_0o',
+                image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'riemann_rects'
+            },
+            {
+                id: 't14',
+                title: 'Cinemática',
+                desc: 'La integración permite resolver el movimiento de los cuerpos mecánicos. Al integrar la ecuación temporal de aceleración a(t) se deduce la velocidad v(t), y al integrar la velocidad se obtiene la posición exacta.',
+                formula: 'v(t) = \\int a(t)\\,dt \\quad\\text{y}\\quad s(t) = \\int v(t)\\,dt',
+                youtube: 'https://www.youtube.com/watch?v=RoxZlX8VfU8',
+                image: 'https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=800&q=80',
+                shape3D: 'gaussian'
+            }
+        ];
+
+        const QUIZ_PREGUNTAS = {
+            t1: {
+                q: "¿Qué representa geométricamente la integral definida de una función continua f(x) ≥ 0 en [a, b]?",
+                opt: ["La velocidad de cambio instantáneo de f(x)", "El área exacta bajo la trayectoria de f(x) sobre el eje X", "La pendiente de la recta tangente"],
+                ans: 1,
+                exp: "De acuerdo con la definición geométrica, la integral definida suma infinitos rectángulos diferenciales para obtener el área exacta bajo la curva."
+            },
+            t2: {
+                q: "¿Por qué agregamos la constante de integración '+ C' en las integrales indefinidas?",
+                opt: ["Por formalismo estético", "Porque la derivada de cualquier término constante es cero, describiendo una familia completa de antiderivadas", "Para balancear el término x"],
+                ans: 1,
+                exp: "Al derivar una función F(x) + C, la constante 'C' se anula. La integral indefinida describe la familia completa de curvas antiderivadas posibles."
+            },
+            t3: {
+                q: "En el método de integración por partes, ¿qué regla nemotécnica define la prioridad para elegir el término 'u'?",
+                opt: ["La regla de Ruffini", "La jerarquía ILATE", "La regla de Simpson"],
+                ans: 1,
+                exp: "La sigla ILATE (Inversas trigonométricas, Logarítmicas, Algebráicas, Trigonométricas, Exponenciales) define la prioridad para facilitar la diferenciación de u."
+            },
+            t4: {
+                q: "¿Cuál es el propósito fundamental del método de cambio de variable o sustitución?",
+                opt: ["Simplificar la integral transformándola en una inmediata al cambiar su argumento por una nueva variable", "Encontrar el volumen exacto de un elipsoide", "Eliminar las constantes del integrando"],
+                ans: 0,
+                exp: "Permite reescribir integrandos complejos en términos de una nueva variable 'u' cuyo diferencial 'du' ya está presente en la expresión original."
+            },
+            t5: {
+                q: "Si deseamos integrar la función sin^3(x) dx, ¿cuál es el procedimiento trigonométrico inicial adecuado?",
+                opt: ["Convertir a coordenadas polares de inmediato", "Escribir como sin^2(x)*sin(x) y sustituir sin^2(x) = 1 - cos^2(x)", "Sustituir sin^3(x) por e^x directamente"],
+                ans: 1,
+                exp: "Al aislar un término impar 'sin(x)', podemos usar la identidad pitagórica en el término par restante, posibilitando el cambio de variable u = cos(x)."
+            },
+            t6: {
+                q: "¿Qué identidad trigonométrica es indispensable para simplificar cos^2(x) cuando el exponente es par y no hay término impar?",
+                opt: ["Identidad Pitagórica Fundamental: cos^2(x) = 1 - sin^2(x)", "Identidad del ángulo medio: cos^2(x) = (1 + cos(2x)) / 2", "Identidad de Euler de variables complejas"],
+                ans: 1,
+                exp: "La fórmula de reducción de potencia de ángulo medio linealiza el integrando permitiendo una resolución directa e inmediata."
+            },
+            t7: {
+                q: "Al resolver una integral que involucra √(a^2 - x^2), ¿cuál es el cambio trigonométrico idóneo?",
+                opt: ["x = a * sec(θ)", "x = a * sin(θ)", "x = a * tan(θ)"],
+                ans: 1,
+                exp: "Con x = a * sin(θ), el término bajo el radical se simplifica a a * cos(θ) gracias a la identidad fundamental de Pitágoras."
+            },
+            t8: {
+                q: "¿Qué condición debe cumplirse para aplicar la descomposición en fracciones parciales de forma directa?",
+                opt: ["Que el grado del polinomio numerador sea menor que el del denominador (fracción propia)", "Que la función sea exponencial pura", "Que los límites sean simétricos alrededor del origen"],
+                ans: 0,
+                exp: "La fracción racional debe ser propia. Si no lo es, se realiza una división polinómica previa para reducir el grado del numerador."
+            },
+            t9: {
+                q: "Si el denominador contiene el factor lineal repetido (x - 2)^2, ¿qué fracciones parciales debemos proponer?",
+                opt: ["A / (x-2) + B / (x-2)^2", "A / (x-2) + B / (x+2)", "A / (x-2) * B / (x-2)"],
+                ans: 0,
+                exp: "Los factores lineales repetidos de multiplicidad n requieren proponer n fracciones con potencias consecutivas incrementales hasta n."
+            },
+            t10: {
+                q: "Si una función f(x) es menor o igual a cero en [a, b], ¿cómo representamos el área geométrica positiva bajo el eje X?",
+                opt: ["Integral simple ordinaria sin signos", "Multiplicando la integral por -1 o integrando el valor absoluto de f(x)", "El área geométrica siempre se anula automáticamente"],
+                ans: 1,
+                exp: "Dado que la integral definida arrojaría un valor neto negativo, multiplicamos el resultado de la integral por -1 para obtener la magnitud física del área geométrica positiva."
+            },
+            t11: {
+                q: "Si f(x) y g(x) se cruzan en un punto c dentro de [a, b], de modo que f(x) > g(x) en [a, c] pero g(x) > f(x) en [c, b], ¿cómo hallamos el área total entre ellas?",
+                opt: ["Evaluando simplemente de a hasta b de forma ordinaria", "Dividiendo el cálculo en dos integrales: de a a c de f-g, y de c a b de g-f", "Tomando el promedio aritmético de las funciones"],
+                ans: 1,
+                exp: "Debemos segmentar la integración en cada subintervalo de cruce para asegurar que integramos siempre la función superior menos la inferior, evitando cancelaciones de signo."
+            },
+            t12: {
+                q: "En el método de discos para sólidos de revolución alrededor del eje X, ¿qué papel juega el término [f(x)]^2 en la fórmula?",
+                opt: ["Representa la longitud infinitesimal del arco", "Representa el radio al cuadrado del disco transversal (Área del círculo = π * R^2)", "Corrige la asimetría dimensional"],
+                ans: 1,
+                exp: "Al rotar la función, cada rebanada transversal perpendicular es un círculo de radio R = f(x). Su área es π * [f(x)]^2."
+            },
+            t13: {
+                q: "¿Cuál es la base analítica detrás de la fórmula de longitud de curva L = ∫√(1 + [f'(x)]^2) dx?",
+                opt: ["La ley de senos trigonométrica", "El teorema de Pitágoras aplicado a incrementos diferenciales ds^2 = dx^2 + dy^2", "El principio de exclusión de Pauli"],
+                ans: 1,
+                exp: "Se basa en sumar infinitos segmentos rectilíneos ds, calculados como ds = √(dx^2 + dy^2) = √(1 + (dy/dx)^2) dx."
+            },
+            t14: {
+                q: "Si la aceleración de un móvil es a(t), ¿cuál es el proceso para encontrar la posición s(t)?",
+                opt: ["Derivar la aceleración una vez", "Integrar la aceleración dos veces sucesivas, aplicando las condiciones de velocidad y posición inicial", "Multiplicar aceleración por tiempo de forma simple"],
+                ans: 1,
+                exp: "La primera integración de a(t) produce la velocidad v(t), y la posterior integración de v(t) produce la posición s(t)."
+            }
+        };
+
+        const LATEX_MODULATOR_FORMS = {
+            t1: (k) => `\\int_a^b (${k} \\cdot f(x))\\,dx = ${k} \\cdot (F(b) - F(a))`,
+            t2: (k) => `\\int (${k} \\cdot f(x))\\,dx = ${k} \\cdot F(x) + C`,
+            t3: (k) => `\\int ${k} u\\,dv = ${k} \\cdot \\left(u\\cdot v - \\int v\\,du\\right)`,
+            t4: (k) => `\\int f(g(x))\\cdot (${k} \\cdot g'(x))\\,dx = ${k} \\cdot \\int f(u)\\,du`,
+            t5: (k) => `\\int (${k} \\cdot \\sin^n(x))\\cdot\\cos^m(x)\\,dx`,
+            t6: (k) => `${k} \\cdot \\sin^2(x) = ${k} \\cdot \\frac{1-\\cos(2x)}{2}`,
+            t7: (k) => `x = ${k} a\\cdot\\sin(\\theta) \\implies \\sqrt{(${k}a)^2-x^2} = ${k}a\\cdot\\cos(\\theta)`,
+            t8: (k) => `${k} \\cdot \\frac{P(x)}{Q(x)} = \\frac{${k}A}{x-r_1} + \\frac{${k}B}{x-r_2}`,
+            t9: (k) => `\\frac{${k} \\cdot P(x)}{(x-a)^n} = \\frac{${k}A_1}{x-a} + \\frac{${k}A_2}{(x-a)^2} + \\dots`,
+            t10: (k) => `A = \\int_a^b (${k} \\cdot f(x))\\,dx`,
+            t11: (k) => `A = \\int_a^b (${k} \\cdot [f(x) - g(x)])\\,dx`,
+            t12: (k) => `V = \\pi\\cdot\\int_a^b (${k} \\cdot [f(x)]^2)\\,dx`,
+            t13: (k) => `L = \\int_a^b \\sqrt{1 + [${k} \\cdot f'(x)]^2}\\,dx`,
+            t14: (k) => `v(t) = \\int ${k} a(t)\\,dt \\quad\\text{y}\\quad s(t) = \\int ${k} v(t)\\,dt`
+        };
+
+        let T_DATOS = [];
+        let ACTIVE_TAB = 'bienvenida';
+        let IS_EDIT_MODE = false;
+
+        function loadData() {
+            const saved = localStorage.getItem('elsa_portfolio_temas');
+            if (saved) {
+                try {
+                    T_DATOS = JSON.parse(saved);
+                } catch (e) {
+                    T_DATOS = JSON.parse(JSON.stringify(DEFAULT_TEMAS));
+                }
+            } else {
+                T_DATOS = JSON.parse(JSON.stringify(DEFAULT_TEMAS));
+                saveData();
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('elsa_portfolio_temas', JSON.stringify(T_DATOS));
+        }
+
+        // --- SISTEMA DE MODALES SIN ALERTS ---
+        function triggerResetModal() {
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        function confirmResetToDefaults() {
+            localStorage.removeItem('elsa_portfolio_temas');
+            loadData();
+            buildDynamicMenu();
+            if (ACTIVE_TAB !== 'bienvenida' && ACTIVE_TAB !== 'simulador') {
+                renderActiveTopic();
+            }
+            closeResetModal();
+            showStatusMessage('Restablecido con éxito', 'emerald');
+        }
+    </script>
+
+    <script>
+        function extractYoutubeId(url) {
+            if (!url) return '';
+            const regExp = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/|shorts\/)|(?:(?:watch)?\?v(?:i)?=|\&v(?:i)?=))([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[1].length === 11) ? match[1] : url;
+        }
+
+        function buildDynamicMenu() {
+            const container = document.getElementById('navDynamicTopics');
+            container.innerHTML = '';
+            
+            T_DATOS.forEach((tema, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `nav-${tema.id}`;
+                btn.className = "inline-flex items-center gap-2 px-4 py-3 rounded-t-xl text-xs font-bold text-slate-400 hover:text-white transition-all";
+                btn.onclick = () => switchTab(tema.id);
+                
+                const romans = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV"];
+                const rNum = romans[idx] || (idx + 1);
+
+                btn.innerHTML = `<span class="text-neon-cyan text-[10px] opacity-75">${rNum}.</span> ${tema.title}`;
+                container.appendChild(btn);
+            });
+        }
+
+        function scrollTopicsNav(offset) {
+            const container = document.getElementById('topicsNavbar');
+            container.scrollBy({ left: offset, behavior: 'smooth' });
+        }
+
+        function switchTab(tabId) {
+            ACTIVE_TAB = tabId;
+            
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('hidden'));
+            document.querySelectorAll('#topicsNavbar button').forEach(btn => btn.classList.remove('active-tab'));
+
+            const activeNavBtn = document.getElementById(`nav-${tabId}`);
+            if (activeNavBtn) activeNavBtn.classList.add('active-tab');
+
+            const isTopic = tabId.startsWith('t') && tabId !== 'tema-dinamico';
+
+            if (isTopic) {
+                renderActiveTopic(tabId);
+                document.getElementById('sec-tema-dinamico').classList.remove('hidden');
+                
+                const currentTema = T_DATOS.find(t => t.id === tabId);
+                if (currentTema && currentTema.shape3D) {
+                    transition3DModel(currentTema.shape3D);
+                }
+            } else {
+                document.getElementById(`sec-${tabId}`).classList.remove('hidden');
+                transition3DModel(tabId === 'simulador' ? 'sombrero' : 'gaussian');
+                if (tabId === 'simulador') {
+                    setTimeout(() => {
+                        calcularAreaSinSubmit();
+                        initCoordinateTracker();
+                    }, 50);
+                }
+            }
+
+            if (IS_EDIT_MODE) {
+                populateEditorFields();
+            }
+        }
+
+        function loadYTIframe(ytId, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = `
+                <iframe class="w-full h-full" src="https://www.youtube.com/embed/${ytId}?autoplay=1" title="Video de apoyo matemático" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            `;
+        }
+
+        function renderActiveTopic(topicId = ACTIVE_TAB) {
+            const tema = T_DATOS.find(t => t.id === topicId);
+            if (!tema) return;
+
+            const ytId = extractYoutubeId(tema.youtube);
+            const container = document.getElementById('sec-tema-dinamico');
+            
+            container.innerHTML = `
+                <div class="glass-panel p-6 rounded-3xl space-y-6">
+                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-3 border-b border-cosmos-700">
+                        <div class="flex items-center gap-3">
+                            <span class="px-2.5 py-1 rounded bg-neon-cyan/20 text-[10px] font-extrabold text-neon-cyan tracking-widest uppercase">Módulo Teórico</span>
+                            <h2 class="text-2xl font-black text-white">${tema.title}</h2>
+                        </div>
+                    </div>
+
+                    <!-- Layout de Contenido e Imagen -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <div class="md:col-span-7 space-y-4">
+                            <p class="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">${tema.desc}</p>
+                            
+                            <!-- Fórmula Relevante -->
+                            <div class="p-4 bg-cosmos-950/80 rounded-xl border border-cosmos-700/60 font-mono text-center text-neon-cyan text-xs relative overflow-hidden">
+                                <div class="absolute inset-y-0 left-0 w-1.5 bg-neon-cyan"></div>
+                                <div class="text-[9px] uppercase font-bold text-slate-500 tracking-wider text-left mb-1">Ecuación Representativa:</div>
+                                <div id="latex-formula-container" class="py-2 text-center overflow-x-auto min-h-[48px] flex items-center justify-center"></div>
+                            </div>
+                        </div>
+
+                        <!-- Imagen del Tema -->
+                        <div class="md:col-span-5 relative group rounded-2xl overflow-hidden bg-black/40 border border-cosmos-800">
+                            <img src="${tema.image}" alt="${tema.title}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" onerror="this.onerror=null; this.src='https://placehold.co/600x400/0c0721/06b6d4?text=${encodeURIComponent(tema.title)}';">
+                            <div class="absolute inset-0 bg-gradient-to-t from-cosmos-950 via-transparent to-transparent pointer-events-none"></div>
+                        </div>
+                    </div>
+
+                    <!-- NUEVA SECCIÓN INNOVADORA: Laboratorio Conceptual y Desafío de Autoevaluación -->
+                    <div class="p-6 rounded-3xl bg-gradient-to-tr from-cosmos-900 via-cosmos-800 to-cosmos-950 border border-neon-cyan/20 space-y-6 relative overflow-hidden">
+                        <div class="absolute -right-12 -top-12 w-24 h-24 bg-neon-cyan/5 rounded-full blur-xl pointer-events-none"></div>
+                        
+                        <div class="flex items-center justify-between pb-2 border-b border-cosmos-800/60">
+                            <h4 class="text-xs font-black text-neon-cyan uppercase tracking-widest flex items-center gap-2">
+                                <i class="fa-solid fa-flask-vial"></i> Laboratorio Teórico y Desafío Conceptual
+                            </h4>
+                            <span class="text-[8px] bg-neon-cyan/10 border border-neon-cyan/20 text-neon-cyan px-2 py-0.5 rounded-full font-extrabold uppercase">Interactivo</span>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Modulador de Parámetro K -->
+                            <div class="space-y-3 bg-black/30 p-4 rounded-xl border border-white/5 flex flex-col justify-between">
+                                <div>
+                                    <h5 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                                        <i class="fa-solid fa-sliders text-neon-pink"></i> Modulador de Coeficiente
+                                    </h5>
+                                    <p class="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                                        Ajusta la constante de amplificación <strong>k</strong> de la fórmula para observar su propiedad matemática instantánea.
+                                    </p>
+                                </div>
+                                <div class="space-y-2 mt-3">
+                                    <div class="flex justify-between text-[10px] text-slate-300 font-mono">
+                                        <span>Constante k:</span>
+                                        <span id="paramK-val" class="text-neon-pink font-bold">1.5x</span>
+                                    </div>
+                                    <input type="range" id="paramK-slider" min="0.5" max="4.0" step="0.5" value="1.5" class="w-full accent-neon-pink cursor-pointer" oninput="updateParamK('${tema.id}')">
+                                </div>
+                                <div id="dynamic-latex-modulator" class="mt-3 p-2 bg-cosmos-950/85 rounded border border-cosmos-700/50 text-center text-xs text-neon-pink font-mono min-h-[42px] flex items-center justify-center"></div>
+                            </div>
+
+                            <!-- Desafío de Autoevaluación -->
+                            <div id="quiz-container" class="space-y-4 bg-black/30 p-4 rounded-xl border border-white/5"></div>
+                        </div>
+                    </div>
+
+                    <!-- Material del Vlog de Apoyo Multimedia con Miniatura Oficial -->
+                    <div class="space-y-3">
+                        <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-play text-neon-pink"></i> Vlog de Apoyo Educativo
+                        </h4>
+                        <!-- Reproductor de video interactivo con la portada cargada automáticamente -->
+                        <div id="yt-player-container-${tema.id}" class="aspect-video w-full rounded-2xl overflow-hidden border border-cosmos-800 bg-black/90 relative group cursor-pointer" onclick="loadYTIframe('${ytId}', 'yt-player-container-${tema.id}')">
+                            <img src="https://img.youtube.com/vi/${ytId}/hqdefault.jpg" class="w-full h-full object-cover opacity-70 group-hover:scale-105 group-hover:opacity-90 transition-all duration-300" onerror="this.src='https://placehold.co/600x400/0c0721/06b6d4?text=Portada+Video';">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 group-hover:bg-black/30 transition-colors">
+                                <div class="w-16 h-16 rounded-full bg-neon-pink/20 border border-neon-pink text-white flex items-center justify-center text-2xl shadow-lg shadow-neon-pink/50 group-hover:scale-110 transition-transform duration-300">
+                                    <i class="fa-solid fa-play ml-1 text-neon-pink"></i>
+                                </div>
+                                <span class="mt-3 text-[10px] font-bold text-white tracking-widest uppercase bg-cosmos-950/90 px-3 py-1.5 rounded-full border border-white/10">Reproducir Video Explicativo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            try {
+                const formulaContainer = document.getElementById('latex-formula-container');
+                if (formulaContainer && typeof katex !== 'undefined') {
+                    katex.render(tema.formula, formulaContainer, {
+                        displayMode: true,
+                        throwOnError: false
+                    });
+                }
+            } catch (err) {
+                console.error("Error al renderizar KaTeX:", err);
+                document.getElementById('latex-formula-container').textContent = tema.formula;
+            }
+
+            // Inicializar elementos interactivos del Laboratorio
+            updateParamK(tema.id);
+            renderQuiz(tema.id);
+        }
+
+        function updateParamK(temaId) {
+            const slider = document.getElementById('paramK-slider');
+            const valLabel = document.getElementById('paramK-val');
+            const container = document.getElementById('dynamic-latex-modulator');
+            if (!slider || !container) return;
+
+            const k = parseFloat(slider.value).toFixed(1);
+            valLabel.textContent = k + 'x';
+
+            const generator = LATEX_MODULATOR_FORMS[temaId];
+            if (generator && typeof katex !== 'undefined') {
+                try {
+                    katex.render(generator(k), container, {
+                        displayMode: true,
+                        throwOnError: false
+                    });
+                } catch(e) {
+                    container.textContent = generator(k);
+                }
+            }
+        }
+
+        function renderQuiz(temaId) {
+            const qData = QUIZ_PREGUNTAS[temaId];
+            const container = document.getElementById('quiz-container');
+            if (!qData || !container) return;
+
+            let optionsHTML = '';
+            qData.opt.forEach((opt, idx) => {
+                optionsHTML += `
+                    <button onclick="checkQuizAnswer('${temaId}', ${idx})" class="w-full text-left p-2.5 rounded-xl border border-cosmos-700 bg-cosmos-900/60 hover:bg-cosmos-800 hover:border-neon-cyan text-slate-300 hover:text-white transition-all text-[11px] leading-relaxed flex gap-2 items-start">
+                        <span class="w-4 h-4 rounded-full border border-slate-500 flex items-center justify-center shrink-0 mt-0.5 text-[9px] font-bold">${String.fromCharCode(65 + idx)}</span>
+                        <span>${opt}</span>
+                    </button>
+                `;
+            });
+
+            container.innerHTML = `
+                <h5 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-question text-neon-violet"></i> Desafío Conceptual de Autoevaluación
+                </h5>
+                <p class="text-[11px] text-slate-200 leading-relaxed font-semibold">${qData.q}</p>
+                <div id="quiz-options-box" class="space-y-2 mt-2">
+                    ${optionsHTML}
+                </div>
+                <div id="quiz-feedback-box" class="hidden p-3 rounded-xl border text-[10px] leading-relaxed"></div>
+            `;
+        }
+
+        function checkQuizAnswer(temaId, selectedIdx) {
+            const qData = QUIZ_PREGUNTAS[temaId];
+            const feedbackBox = document.getElementById('quiz-feedback-box');
+            const optionsBox = document.getElementById('quiz-options-box');
+            if (!qData || !feedbackBox) return;
+
+            const isCorrect = (selectedIdx === qData.ans);
+            const buttons = optionsBox.querySelectorAll('button');
+            
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                if (idx === qData.ans) {
+                    btn.className = "w-full text-left p-2.5 rounded-xl border border-neon-emerald bg-neon-emerald/10 text-white transition-all text-[11px] leading-relaxed flex gap-2 items-start";
+                } else if (idx === selectedIdx && !isCorrect) {
+                    btn.className = "w-full text-left p-2.5 rounded-xl border border-neon-pink bg-neon-pink/10 text-white transition-all text-[11px] leading-relaxed flex gap-2 items-start";
+                } else {
+                    btn.className = "w-full text-left p-2.5 rounded-xl border border-cosmos-800 bg-cosmos-950/20 text-slate-500 transition-all text-[11px] leading-relaxed flex gap-2 items-start opacity-50";
+                }
+            });
+
+            feedbackBox.classList.remove('hidden');
+            if (isCorrect) {
+                feedbackBox.className = "p-3 rounded-xl border border-neon-emerald/30 bg-neon-emerald/10 text-emerald-400 text-[10px] leading-relaxed animate-pulse";
+                feedbackBox.innerHTML = `
+                    <div class="font-extrabold flex items-center gap-1.5 mb-1 text-xs">
+                        <i class="fa-solid fa-circle-check text-neon-emerald"></i> ¡RESPUESTA CORRECTA!
+                    </div>
+                    <p class="text-slate-300">${qData.exp}</p>
+                `;
+                showStatusMessage('¡Desafío superado con éxito!', 'emerald');
+            } else {
+                feedbackBox.className = "p-3 rounded-xl border border-neon-pink/30 bg-neon-pink/10 text-neon-pink text-[10px] leading-relaxed";
+                feedbackBox.innerHTML = `
+                    <div class="font-extrabold flex items-center gap-1.5 mb-1 text-xs text-neon-pink">
+                        <i class="fa-solid fa-circle-xmark"></i> RESPUESTA INCORRECTA
+                    </div>
+                    <p class="text-slate-300">Inténtalo de nuevo o repasa el concepto. Explicación: ${qData.exp}</p>
+                `;
+                showStatusMessage('Inténtalo de nuevo', 'pink');
+            }
+        }
+    </script>
+
+    <script>
+        // --- SISTEMA DE GESTIÓN Y EDICIÓN (CMS CON FORMATOS WORD) ---
+        function toggleEditMode() {
+            IS_EDIT_MODE = !IS_EDIT_MODE;
+            const btn = document.getElementById('editModeToggleBtn');
+            const panel = document.getElementById('quickEditPanel');
+
+            if (IS_EDIT_MODE) {
+                btn.innerHTML = `<i class="fa-solid fa-lock"></i> Bloquear Edición`;
+                btn.className = "px-4 py-2 rounded-xl text-xs font-bold bg-neon-amber text-cosmos-950 hover:bg-neon-amber/90 transition-all flex items-center gap-2 shadow-lg shadow-neon-amber/25";
+                panel.classList.remove('hidden');
+                populateEditorFields();
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> Activar Modo Edición`;
+                btn.className = "px-4 py-2 rounded-xl text-xs font-bold border border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/10 transition-all flex items-center gap-2";
+                panel.classList.add('hidden');
+            }
+        }
+
+        function populateEditorFields() {
+            const isTopic = ACTIVE_TAB.startsWith('t') && ACTIVE_TAB !== 'tema-dinamico';
+            const editTitleInput = document.getElementById('editTitle');
+
+            if (!isTopic) {
+                if (editTitleInput) editTitleInput.disabled = true;
+                return;
+            }
+
+            const tema = T_DATOS.find(t => t.id === ACTIVE_TAB);
+            if (!tema) return;
+
+            document.getElementById('editTitle').value = tema.title;
+            document.getElementById('editDesc').value = tema.desc;
+            document.getElementById('editFormula').value = tema.formula;
+            document.getElementById('editYoutube').value = tema.youtube;
+            document.getElementById('editImage').value = tema.image;
+        }
+
+        // Acciones para formateo Word
+        function formatEditorText(style) {
+            const textarea = document.getElementById('editDesc');
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            let selectedText = text.substring(start, end);
+
+            if (!selectedText) return;
+
+            let formatted = '';
+            if (style === 'bold') {
+                formatted = `**${selectedText}**`;
+            } else if (style === 'italic') {
+                formatted = `*${selectedText}*`;
+            } else if (style === 'underline') {
+                formatted = `_${selectedText}_`;
+            }
+
+            textarea.value = text.substring(0, start) + formatted + text.substring(end);
+            textarea.focus();
+        }
+
+        function insertFormulaPlaceholder() {
+            const textarea = document.getElementById('editDesc');
+            const pos = textarea.selectionStart;
+            const currentVal = textarea.value;
+            textarea.value = currentVal.substring(0, pos) + " [Ecuación: \\int f(x) dx ] " + currentVal.substring(pos);
+            textarea.focus();
+        }
+
+        function insertBulletList() {
+            const textarea = document.getElementById('editDesc');
+            const pos = textarea.selectionStart;
+            const currentVal = textarea.value;
+            textarea.value = currentVal.substring(0, pos) + "\n- Punto 1\n- Punto 2" + currentVal.substring(pos);
+            textarea.focus();
+        }
+
+        function saveCurrentTopic() {
+            const temaIdx = T_DATOS.findIndex(t => t.id === ACTIVE_TAB);
+            if (temaIdx === -1) return;
+
+            T_DATOS[temaIdx].title = document.getElementById('editTitle').value.trim();
+            T_DATOS[temaIdx].desc = document.getElementById('editDesc').value.trim();
+            T_DATOS[temaIdx].formula = document.getElementById('editFormula').value.trim();
+            T_DATOS[temaIdx].youtube = document.getElementById('editYoutube').value.trim();
+            T_DATOS[temaIdx].image = document.getElementById('editImage').value.trim();
+
+            saveData();
+            buildDynamicMenu();
+            renderActiveTopic();
+            showStatusMessage('Cambios aplicados con éxito', 'emerald');
+        }
+
+        function showStatusMessage(texto, color) {
+            const banner = document.createElement('div');
+            banner.className = `fixed bottom-4 right-4 z-50 px-4 py-3 rounded-xl border border-neon-${color}/30 bg-cosmos-950/95 backdrop-blur text-xs font-bold text-neon-${color} shadow-2xl flex items-center gap-2 animate-bounce`;
+            banner.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${texto}`;
+            document.body.appendChild(banner);
+            setTimeout(() => banner.remove(), 3000);
+        }
+    </script>
+
+    <script>
+        /*
+          MÓDULO GRÁFICO CIENTÍFICO 3D (Simulación de image_a44c3d.png)
+          Crea una malla matemática 3D densa con degradado por altura y caja de ejes.
+        */
+        let scene, camera, renderer, currentMesh = null, gridBox = null;
+        const container = document.getElementById('threejs-container');
+
+        function init3DMathViewer() {
+            if (!container) return;
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            camera.position.set(3.5, 4.0, 5.0);
+            camera.lookAt(0, 0.5, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const directLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directLight.position.set(3, 10, 3);
+            scene.add(directLight);
+
+            // Crear la caja de rejilla 3D de referencia científica
+            const gridHelper = new THREE.GridHelper(4, 10, 0x06b6d4, 0x1b1758);
+            gridHelper.position.y = -0.1;
+            scene.add(gridHelper);
+
+            // Crear caja contenedora para simular la gráfica de Matlab de image_a44c3d.png
+            const boxGeom = new THREE.BoxGeometry(4, 2.2, 4);
+            const boxEdges = new THREE.EdgesGeometry(boxGeom);
+            gridBox = new THREE.LineSegments(boxEdges, new THREE.LineBasicMaterial({ color: 0x334155, transparent: true, opacity: 0.6 }));
+            gridBox.position.y = 1.0;
+            scene.add(gridBox);
+
+            // Generar la superficie inicial
+            generateShape('sombrero');
+
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+
+            container.addEventListener('mousedown', () => isDragging = true);
+            container.addEventListener('mousemove', (e) => {
+                if (!isDragging || !currentMesh) return;
+                const deltaMove = {
+                    x: e.offsetX - previousMousePosition.x,
+                    y: e.offsetY - previousMousePosition.y
+                };
+
+                // Rotar tanto la superficie como la caja de referencia juntas
+                currentMesh.rotation.y += deltaMove.x * 0.007;
+                currentMesh.rotation.x += deltaMove.y * 0.007;
+                gridBox.rotation.y += deltaMove.x * 0.007;
+                gridBox.rotation.x += deltaMove.y * 0.007;
+
+                previousMousePosition = { x: e.offsetX, y: e.offsetY };
+            });
+            window.addEventListener('mouseup', () => isDragging = false);
+
+            // Control táctil móvil
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    isDragging = true;
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            });
+            container.addEventListener('touchmove', (e) => {
+                if (!isDragging || !currentMesh || e.touches.length === 0) return;
+                const deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+
+                currentMesh.rotation.y += deltaMove.x * 0.007;
+                currentMesh.rotation.x += deltaMove.y * 0.007;
+                gridBox.rotation.y += deltaMove.x * 0.007;
+                gridBox.rotation.x += deltaMove.y * 0.007;
+
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            });
+            container.addEventListener('touchend', () => isDragging = false);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (!isDragging && currentMesh) {
+                    currentMesh.rotation.y += 0.002;
+                    gridBox.rotation.y += 0.002;
+                }
+                renderer.render(scene, camera);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                if (!container || !camera || !renderer) return;
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+            });
+        }
+
+        // Generar la superficie 3D de alta definición basada en la altura (Estilo image_a44c3d.png)
+        function generateShape(type) {
+            if (currentMesh) scene.remove(currentMesh);
+
+            const size = 4;
+            const segments = 55; // Alta resolución para mallas finas
+            const geom = new THREE.PlaneGeometry(size, size, segments, segments);
+            
+            // Rotar plano para alinearlo horizontalmente antes de esculpir alturas
+            geom.rotateX(-Math.PI / 2);
+
+            const position = geom.attributes.position;
+            const colors = [];
+
+            // Algoritmo para esculpir superficies matemáticas y aplicar degradado de color
+            for (let i = 0; i < position.count; i++) {
+                const x = position.getX(i);
+                const z = position.getZ(i); // Representa la profundidad en plano horizontal de Three.js
+
+                let y = 0; // Altura matemática final
+
+                if (type === 'sombrero') {
+                    // Sinc / Sombrero matemático clásico de image_a44c3d.png
+                    const r = Math.sqrt(x*x + z*z) + 0.0001;
+                    y = (Math.sin(r * 4.0) / (r * 4.0)) * 1.5;
+                } else if (type === 'gaussian') {
+                    // Campana Gaussiana bidimensional de referencia
+                    y = Math.exp(-(x*x + z*z) * 0.5) * 1.8;
+                } else if (type === 'saddle') {
+                    // Paraboloide hiperbólico (Silla de montar)
+                    y = ((x*x - z*z) / 4) + 0.8;
+                } else if (type === 'sineWave') {
+                    // Onda armónica senoidal cruzada
+                    y = (Math.sin(x * 3) * Math.cos(z * 3)) * 0.8 + 0.8;
+                } else {
+                    // Sumas de Riemann / Escalones de aproximación
+                    const stepX = Math.floor(x * 3) / 3;
+                    const stepZ = Math.floor(z * 3) / 3;
+                    y = Math.exp(-(stepX*stepX + stepZ*stepZ) * 0.5) * 1.5;
+                }
+
+                // Ajustar posición
+                position.setY(i, y);
+
+                // Asignar colores según la altura (Azul -> Cian/Verde -> Amarillo brillante como la referencia)
+                const normY = Math.max(0, Math.min(1, (y + 0.5) / 2.2)); // Normalizado [0, 1]
+                const color = new THREE.Color();
+                
+                if (normY < 0.3) {
+                    // Zona baja: Azul / Violeta
+                    color.setHSL(0.66 + normY * 0.3, 1.0, 0.4);
+                } else if (normY < 0.7) {
+                    // Zona media: Cian / Verde azulado
+                    color.setHSL(0.5 - (normY - 0.3) * 0.5, 1.0, 0.5);
+                } else {
+                    // Cúspide: Amarillo brillante
+                    color.setHSL(0.18 - (normY - 0.7) * 0.6, 1.0, 0.5);
+                }
+                
+                colors.push(color.r, color.g, color.b);
+            }
+
+            geom.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geom.computeVertexNormals();
+
+            // Material sofisticado con soporte para color de vértice e iluminación
+            const material = new THREE.MeshPhongMaterial({
+                vertexColors: true,
+                side: THREE.DoubleSide,
+                wireframe: true, // Estilo malla científica fiel a image_a44c3d.png
+                flatShading: true
+            });
+
+            currentMesh = new THREE.Mesh(geom, material);
+            scene.add(currentMesh);
+        }
+
+        function transition3DModel(shapeName) {
+            if (!currentMesh) return;
+            
+            let scale = 1.0;
+            const shrinkInterval = setInterval(() => {
+                scale -= 0.15;
+                if (scale <= 0.1) {
+                    clearInterval(shrinkInterval);
+                    generateShape(shapeName);
+                    
+                    let growScale = 0.1;
+                    const growInterval = setInterval(() => {
+                        growScale += 0.15;
+                        if (growScale >= 1.0) {
+                            currentMesh.scale.set(1, 1, 1);
+                            clearInterval(growInterval);
+                        } else {
+                            currentMesh.scale.set(growScale, growScale, growScale);
+                        }
+                    }, 20);
+                } else {
+                    currentMesh.scale.set(scale, scale, scale);
+                }
+            }, 20);
+        }
+    </script>
+
+    <script>
+        // --- MOTOR GRÁFICO Y MATEMÁTICO INTEGRALSTUDIO ---
+        function parseMathExpression(expression) {
+            let expr = expression.toLowerCase();
+            expr = expr.replace(/\s+/g, '');
+            // Remplazar potencias algebraicas comunes
+            expr = expr.replace(/\^/g, '**');
+            // Añadir multiplicación implícita delante de x
+            expr = expr.replace(/(\d+)(x)/g, '$1*$2');
+            expr = expr.replace(/(\d+)(\()/g, '$1*$2');
+            expr = expr.replace(/(\))(x)/g, '$1*$2');
+            // Mapeo de funciones matemáticas estándar
+            const mathFuncs = ['sin', 'cos', 'tan', 'sqrt', 'exp', 'log', 'abs', 'pow', 'pi', 'e'];
+            mathFuncs.forEach(func => {
+                if (func === 'pi') {
+                    expr = expr.replace(/pi/g, 'Math.PI');
+                } else if (func === 'e') {
+                    expr = expr.replace(/\be\b/g, 'Math.E');
+                } else {
+                    const reg = new RegExp(func, 'g');
+                    expr = expr.replace(reg, 'Math.' + func);
+                }
+            });
+            return expr;
+        }
+
+        function evaluateMathExpression(expression, x) {
+            const safeEval = new Function('x', `return ${expression};`);
+            return safeEval(x);
+        }
+
+        function togglePartitionSlider() {
+            const method = document.getElementById('simMethod').value;
+            const container = document.getElementById('partitionSliderContainer');
+            if (method === 'exact') {
+                container.classList.add('hidden');
+            } else {
+                container.classList.remove('hidden');
+            }
+            calcularAreaSinSubmit();
+        }
+
+        function updatePartitionLabel() {
+            const slider = document.getElementById('simPartitions');
+            const label = document.getElementById('partitionValue');
+            label.textContent = slider.value;
+            calcularAreaSinSubmit();
+        }
+
+        function loadSimPreset(presetName) {
+            const fx = document.getElementById('fx');
+            const gx = document.getElementById('gx');
+            const limA = document.getElementById('limA');
+            const limB = document.getElementById('limB');
+
+            if (presetName === 'parabola') {
+                fx.value = "x";
+                gx.value = "x * x";
+                limA.value = "0";
+                limB.value = "1";
+            } else if (presetName === 'trig') {
+                fx.value = "Math.sin(x)";
+                gx.value = "Math.cos(x)";
+                limA.value = "0.785";
+                limB.value = "3.927";
+            } else if (presetName === 'wave') {
+                fx.value = "Math.sin(x) + 1.5";
+                gx.value = "0.5";
+                limA.value = "0";
+                limB.value = "3.1416";
+            }
+            calcularAreaSinSubmit();
+        }
+
+        function drawSimulatorGraph() {
+            const canvas = document.getElementById('simulador-canvas');
+            if (!canvas) return;
+            
+            // Adaptar canvas a resolución de pantalla real
+            const width = canvas.offsetWidth;
+            const height = canvas.offsetHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+
+            const fxRaw = document.getElementById('fx').value.trim();
+            const gxRaw = document.getElementById('gx').value.trim();
+            const a = parseFloat(document.getElementById('limA').value);
+            const b = parseFloat(document.getElementById('limB').value);
+            const method = document.getElementById('simMethod').value;
+            const nPartitions = parseInt(document.getElementById('simPartitions').value);
+
+            let fParsed, gParsed;
+            try {
+                fParsed = parseMathExpression(fxRaw);
+                gParsed = parseMathExpression(gxRaw);
+            } catch(e) {
+                return;
+            }
+
+            // Definir márgenes horizontales de visualización
+            const rangeX = b - a;
+            const minX = a - rangeX * 0.25 - 0.5;
+            const maxX = b + rangeX * 0.25 + 0.5;
+
+            // Encontrar límites de altura Y
+            let minY = Infinity;
+            let maxY = -Infinity;
+            const samples = 150;
+            const step = (maxX - minX) / samples;
+
+            const fPoints = [];
+            const gPoints = [];
+
+            for (let i = 0; i <= samples; i++) {
+                const x = minX + i * step;
+                let y1 = 0, y2 = 0;
+                try {
+                    y1 = evaluateMathExpression(fParsed, x);
+                    y2 = evaluateMathExpression(gParsed, x);
+                } catch(e){}
+
+                if (!isNaN(y1) && isFinite(y1)) {
+                    fPoints.push({ x, y: y1 });
+                    minY = Math.min(minY, y1);
+                    maxY = Math.max(maxY, y1);
+                }
+                if (!isNaN(y2) && isFinite(y2)) {
+                    gPoints.push({ x, y: y2 });
+                    minY = Math.min(minY, y2);
+                    maxY = Math.max(maxY, y2);
+                }
+            }
+
+            // Margen vertical adaptativo
+            const rangeY = (maxY - minY) || 1;
+            minY = minY - (rangeY * 0.15 + 0.2);
+            maxY = maxY + (rangeY * 0.15 + 0.2);
+
+            // Funciones de mapeo matemático de coordenadas a pantalla
+            function toScreenX(x) {
+                return ((x - minX) / (maxX - minX)) * width;
+            }
+            function toScreenY(y) {
+                return height - ((y - minY) / (maxY - minY)) * height;
+            }
+            function toMathX(sx) {
+                return minX + (sx / width) * (maxX - minX);
+            }
+
+            // Rejillas y marcas numéricas de fondo
+            ctx.strokeStyle = 'rgba(27, 23, 88, 0.4)';
+            ctx.lineWidth = 1;
+            
+            const xGridStep = Math.pow(10, Math.floor(Math.log10(maxX - minX))) / 2 || 1;
+            let startGridX = Math.floor(minX / xGridStep) * xGridStep;
+            for (let x = startGridX; x <= maxX; x += xGridStep) {
+                const sx = toScreenX(x);
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, height);
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
+                ctx.font = '9px monospace';
+                ctx.fillText(x.toFixed(1), sx + 2, height - 6);
+            }
+
+            const yGridStep = Math.pow(10, Math.floor(Math.log10(maxY - minY))) / 2 || 1;
+            let startGridY = Math.floor(minY / yGridStep) * yGridStep;
+            for (let y = startGridY; y <= maxY; y += yGridStep) {
+                const sy = toScreenY(y);
+                ctx.beginPath();
+                ctx.moveTo(0, sy);
+                ctx.lineTo(width, sy);
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
+                ctx.font = '9px monospace';
+                ctx.fillText(y.toFixed(1), 5, sy - 2);
+            }
+
+            // Ejes de coordenadas principales (X e Y)
+            ctx.strokeStyle = 'rgba(6, 182, 212, 0.25)';
+            ctx.lineWidth = 1.5;
+            if (minY <= 0 && maxY >= 0) {
+                const sy0 = toScreenY(0);
+                ctx.beginPath();
+                ctx.moveTo(0, sy0);
+                ctx.lineTo(width, sy0);
+                ctx.stroke();
+            }
+            if (minX <= 0 && maxX >= 0) {
+                const sx0 = toScreenX(0);
+                ctx.beginPath();
+                ctx.moveTo(sx0, 0);
+                ctx.lineTo(sx0, height);
+                ctx.stroke();
+            }
+
+            // Dibujar región de área sombreada entre las curvas de a a b
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.2)';
+            ctx.beginPath();
+            let first = true;
+            const shadeSamples = 100;
+            const dxShade = (b - a) / shadeSamples;
+
+            for (let i = 0; i <= shadeSamples; i++) {
+                const x = a + i * dxShade;
+                try {
+                    const y = evaluateMathExpression(fParsed, x);
+                    if (first) {
+                        ctx.moveTo(toScreenX(x), toScreenY(y));
+                        first = false;
+                    } else {
+                        ctx.lineTo(toScreenX(x), toScreenY(y));
+                    }
+                } catch(e){}
+            }
+            for (let i = shadeSamples; i >= 0; i--) {
+                const x = a + i * dxShade;
+                try {
+                    const y = evaluateMathExpression(gParsed, x);
+                    ctx.lineTo(toScreenX(x), toScreenY(y));
+                } catch(e){}
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            if (method !== 'exact') {
+                const dxPart = (b - a) / nPartitions;
+                ctx.lineWidth = 1;
+                for (let i = 0; i < nPartitions; i++) {
+                    const xLeft = a + i * dxPart;
+                    const xRight = xLeft + dxPart;
+                    let xEval = xLeft;
+
+                    if (method === 'right') {
+                        xEval = xRight;
+                    } else if (method === 'midpoint') {
+                        xEval = xLeft + dxPart / 2;
+                    }
+
+                    let yf = 0, yg = 0;
+                    try {
+                        yf = evaluateMathExpression(fParsed, xEval);
+                        yg = evaluateMathExpression(gParsed, xEval);
+                    } catch(e){}
+
+                    const sxL = toScreenX(xLeft);
+                    const sxR = toScreenX(xRight);
+                    const syF = toScreenY(yf);
+                    const syG = toScreenY(yg);
+
+                    ctx.fillStyle = 'rgba(6, 182, 212, 0.12)';
+                    ctx.strokeStyle = 'rgba(6, 182, 212, 0.55)';
+
+                    if (method === 'trapezoid') {
+                        let yfR = 0, ygR = 0;
+                        try {
+                            yfR = evaluateMathExpression(fParsed, xRight);
+                            ygR = evaluateMathExpression(gParsed, xRight);
+                        } catch(e){}
+                        const syFR = toScreenY(yfR);
+                        const syGR = toScreenY(ygR);
+
+                        ctx.beginPath();
+                        ctx.moveTo(sxL, syG);
+                        ctx.lineTo(sxL, syF);
+                        ctx.lineTo(sxR, syFR);
+                        ctx.lineTo(sxR, syGR);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                    } else {
+                        ctx.beginPath();
+                        ctx.rect(sxL, Math.min(syF, syG), sxR - sxL, Math.abs(syF - syG));
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Graficar trayectorias de curvas superiores e inferiores
+            ctx.strokeStyle = '#ec4899'; // f(x) - rosa
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            first = true;
+            fPoints.forEach(p => {
+                if (first) {
+                    ctx.moveTo(toScreenX(p.x), toScreenY(p.y));
+                    first = false;
+                } else {
+                    ctx.lineTo(toScreenX(p.x), toScreenY(p.y));
+                }
+            });
+            ctx.stroke();
+
+            ctx.strokeStyle = '#06b6d4'; // g(x) - cian
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            first = true;
+            gPoints.forEach(p => {
+                if (first) {
+                    ctx.moveTo(toScreenX(p.x), toScreenY(p.y));
+                    first = false;
+                } else {
+                    ctx.lineTo(toScreenX(p.x), toScreenY(p.y));
+                }
+            });
+            ctx.stroke();
+
+            // Almacenar punteros de mapeo en ventana global para el tracker
+            window.simToMathX = toMathX;
+            window.simToScreenX = toScreenX;
+            window.simToScreenY = toScreenY;
+            window.simFParsed = fParsed;
+            window.simGParsed = gParsed;
+        }
+
+        function initCoordinateTracker() {
+            const canvas = document.getElementById('simulador-canvas');
+            const tracker = document.getElementById('canvas-tracker-info');
+            if (!canvas || !tracker) return;
+
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const sx = e.clientX - rect.left;
+
+                if (typeof window.simToMathX !== 'function') return;
+
+                const x = window.simToMathX(sx);
+                let yf = 0, yg = 0;
+                try {
+                    yf = evaluateMathExpression(window.simFParsed, x);
+                    yg = evaluateMathExpression(window.simGParsed, x);
+                } catch(err){}
+
+                tracker.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-4 text-[10px] font-mono text-slate-300">
+                        <div><span class="text-neon-cyan font-bold">X:</span> ${x.toFixed(4)}</div>
+                        <div><span class="text-neon-pink font-bold">f(X):</span> ${yf.toFixed(4)}</div>
+                        <div><span class="text-neon-cyan font-bold">g(X):</span> ${yg.toFixed(4)}</div>
+                        <div><span class="text-neon-violet font-bold">Altura [f-g]:</span> ${(yf - yg).toFixed(4)}</div>
+                    </div>
+                `;
+
+                // Dibujar línea guía temporal sobre la gráfica
+                drawSimulatorGraph();
+                const ctx = canvas.getContext('2d');
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(sx, 0);
+                ctx.lineTo(sx, canvas.height);
+                ctx.stroke();
+
+                const syF = window.simToScreenY(yf);
+                const syG = window.simToScreenY(yg);
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.arc(sx, syF, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#06b6d4';
+                ctx.beginPath();
+                ctx.arc(sx, syG, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                tracker.innerHTML = `<span class="text-[10px] text-slate-500">Mueve el mouse sobre la gráfica para explorar coordenadas...</span>`;
+                drawSimulatorGraph();
+            });
+        }
+    </script>
+
+    <script>
+        function calcularArea(event) {
+            if (event) event.preventDefault();
+            calcularAreaSinSubmit();
+        }
+
+        function calcularAreaSinSubmit() {
+            const fxRaw = document.getElementById('fx').value.trim();
+            const gxRaw = document.getElementById('gx').value.trim();
+            const a = parseFloat(document.getElementById('limA').value);
+            const b = parseFloat(document.getElementById('limB').value);
+            const method = document.getElementById('simMethod').value;
+            const nPartitions = parseInt(document.getElementById('simPartitions').value);
+            const consola = document.getElementById('consolaResultado');
+
+            if (isNaN(a) || isNaN(b)) {
+                mostrarErrorSimulador("Límites de integración inválidos.");
+                return;
+            }
+            if (a >= b) {
+                mostrarErrorSimulador("El límite inferior (a) debe ser estrictamente menor al límite superior (b).");
+                return;
+            }
+
+            try {
+                const fParsed = parseMathExpression(fxRaw);
+                const gParsed = parseMathExpression(gxRaw);
+
+                // 1. Calcular el área numérica exacta aplicando subdivisión densa (2500 rectángulos)
+                let exactArea = 0;
+                const exactIntervals = 2500;
+                const dxExact = (b - a) / exactIntervals;
+                for (let i = 0; i < exactIntervals; i++) {
+                    const x = a + i * dxExact + (dxExact / 2);
+                    const y1 = evaluateMathExpression(fParsed, x);
+                    const y2 = evaluateMathExpression(gParsed, x);
+                    
+                    if (isNaN(y1) || isNaN(y2)) {
+                        throw new Error("Expresión inválida");
+                    }
+                    exactArea += Math.abs(y1 - y2) * dxExact;
+                }
+
+                // 2. Calcular la aproximación según el método de Riemann/Trapecio elegido
+                let approxArea = 0;
+                if (method !== 'exact') {
+                    const dxPart = (b - a) / nPartitions;
+                    for (let i = 0; i < nPartitions; i++) {
+                        const xLeft = a + i * dxPart;
+                        const xRight = xLeft + dxPart;
+                        let xEval = xLeft;
+
+                        if (method === 'right') {
+                            xEval = xRight;
+                        } else if (method === 'midpoint') {
+                            xEval = xLeft + dxPart / 2;
+                        }
+
+                        if (method === 'trapezoid') {
+                            const yfL = evaluateMathExpression(fParsed, xLeft);
+                            const ygL = evaluateMathExpression(gParsed, xLeft);
+                            const yfR = evaluateMathExpression(fParsed, xRight);
+                            const ygR = evaluateMathExpression(gParsed, xRight);
+                            approxArea += ((Math.abs(yfL - ygL) + Math.abs(yfR - ygR)) / 2) * dxPart;
+                        } else {
+                            const yf = evaluateMathExpression(fParsed, xEval);
+                            const yg = evaluateMathExpression(gParsed, xEval);
+                            approxArea += Math.abs(yf - yg) * dxPart;
+                        }
+                    }
+                }
+
+                // Generar etiquetas de texto para resultados
+                let methodLabel = "Numérica Exacta";
+                if (method === 'left') methodLabel = "Riemann Izquierda";
+                if (method === 'right') methodLabel = "Riemann Derecha";
+                if (method === 'midpoint') methodLabel = "Riemann Central";
+                if (method === 'trapezoid') methodLabel = "Regla del Trapecio";
+
+                let approxHTML = "";
+                if (method !== 'exact') {
+                    const absError = Math.abs(approxArea - exactArea);
+                    const pctError = exactArea !== 0 ? (absError / exactArea * 100).toFixed(4) : "0.0000";
+                    approxHTML = `
+                        <div class="grid grid-cols-2 gap-3 pt-2">
+                            <div class="bg-cosmos-900 border border-cosmos-800 p-3 rounded-xl">
+                                <p class="text-[9px] text-slate-400">Aproximación (${methodLabel}):</p>
+                                <p class="text-base font-black text-neon-pink">${approxArea.toFixed(6)} <span class="text-[10px]">u²</span></p>
+                            </div>
+                            <div class="bg-cosmos-900 border border-cosmos-800 p-3 rounded-xl">
+                                <p class="text-[9px] text-slate-400">Error Relativo:</p>
+                                <p class="text-base font-black text-neon-amber">${pctError}%</p>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                consola.innerHTML = `
+                    <div class="space-y-3 w-full text-left">
+                        <div class="flex items-center gap-2 text-neon-emerald">
+                            <i class="fa-solid fa-circle-check text-base"></i>
+                            <h4 class="text-[10px] font-black uppercase tracking-widest text-emerald-400">Análisis Realizado</h4>
+                        </div>
+                        <div class="bg-cosmos-900 border border-cosmos-800 p-3 rounded-xl">
+                            <p class="text-[9px] text-slate-400">Área Exacta de la Región (Fronteras):</p>
+                            <p class="text-xl font-black text-white">${exactArea.toFixed(6)} <span class="text-xs text-neon-cyan">u²</span></p>
+                        </div>
+                        ${approxHTML}
+                    </div>
+                `;
+
+                // Dibujar canvas de inmediato
+                drawSimulatorGraph();
+
+            } catch (error) {
+                mostrarErrorSimulador("Error analítico. Revisa la sintaxis matemática de las funciones (ej: x * x, cos(x), Math.sin(x)).");
+            }
+        }
+
+        function mostrarErrorSimulador(msg) {
+            const consola = document.getElementById('consolaResultado');
+            consola.innerHTML = `
+                <div class="space-y-2 w-full text-left">
+                    <div class="flex items-center gap-2 text-neon-pink">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h4 class="text-[10px] font-black uppercase tracking-widest text-red-400">Error del Motor</h4>
+                    </div>
+                    <p class="text-xs text-slate-400 leading-relaxed">${msg}</p>
+                </div>
+            `;
+        }
+
+        window.onload = function() {
+            loadData();
+            buildDynamicMenu();
+            switchTab('bienvenida');
+            init3DMathViewer();
+        }
+    </script>
+</body>
+</html>
